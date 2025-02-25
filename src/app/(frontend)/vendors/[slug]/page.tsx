@@ -1,143 +1,326 @@
-import { getPayload } from 'payload'
-import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import config from '@/payload.config'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { VendorGallery } from '@/components/vendors/VendorGallery'
-
+import { getPayload } from 'payload';
+import config from '@/payload.config';
+import {
+  Clock,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
+} from 'lucide-react';
+import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { VendorGallery } from '@/components/vendors/VendorGallery';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { VendorRatings } from '@/components/vendors/VendorRatings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 interface Props {
   params: Promise<{
-    slug: string
-  }>
+    slug: string;
+  }>;
 }
 
 export default async function VendorPage({ params }: Props) {
-  const { slug } = await params
-  const payload = await getPayload({ config })
-  
-  const { docs } = await payload.find({
-    collection: 'vendors',
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
-    depth: 2,
-    limit: 1,
-  }).catch(() => ({ docs: [] }))
+  const { slug } = await params;
+  const payload = await getPayload({ config });
 
-  const vendor = docs[0]
+  const { docs } = await payload
+    .find({
+      collection: 'vendors',
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
+      depth: 2,
+      limit: 1,
+    })
+    .catch(() => ({ docs: [] }));
+
+  const vendor = docs[0];
   if (!vendor) {
-    return notFound()
+    return notFound();
   }
 
+  const additionalImages = [
+    {
+      url: 'https://images.unsplash.com/photo-1551218808-94e220e084d2',
+      alt: 'Placeholder Image 1',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Placeholder Image 2',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2680&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Placeholder Image 3',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Placeholder Image 4',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?q=80&w=2580&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Placeholder Image 5',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Placeholder Image 6',
+    },
+  ];
+
+  const contactMethods = [
+    ...(vendor.contact?.phone
+      ? [
+          {
+            icon: <Phone className="h-4 w-4" />,
+            label: 'Phone',
+            value: vendor.contact.phone,
+            href: `tel:${vendor.contact.phone}`,
+          },
+        ]
+      : []),
+    ...(vendor.contact?.email
+      ? [
+          {
+            icon: <Mail className="h-4 w-4" />,
+            label: 'Email',
+            value: vendor.contact.email,
+            href: `mailto:${vendor.contact.email}`,
+          },
+        ]
+      : []),
+    ...(vendor.socialMedia?.instagram
+      ? [
+          {
+            icon: <Instagram className="h-4 w-4" />,
+            label: 'Instagram',
+            value: '@' + vendor.socialMedia.instagram.split('/').pop(),
+            href: vendor.socialMedia.instagram,
+          },
+        ]
+      : []),
+    ...(vendor.socialMedia?.facebook
+      ? [
+          {
+            icon: <Facebook className="h-4 w-4" />,
+            label: 'Facebook',
+            value: vendor.socialMedia.facebook.split('/').pop(),
+            href: vendor.socialMedia.facebook,
+          },
+        ]
+      : []),
+    ...(vendor.socialMedia?.twitter
+      ? [
+          {
+            icon: <Twitter className="h-4 w-4" />,
+            label: 'Twitter',
+            value: '@' + vendor.socialMedia.twitter.split('/').pop(),
+            href: vendor.socialMedia.twitter,
+          },
+        ]
+      : []),
+  ].filter(Boolean);
+
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
-      {/* Mobile Business Info - Shows above gallery on mobile */}
-      <div className="lg:hidden mb-8">
-        <h1 className="text-2xl font-bold mb-4 text-foreground">{vendor.name}</h1>
-        <p className="text-muted-foreground mb-6">{vendor.description}</p>
+    <div className="max-w-7xl mx-auto py-4 px-4">
+      {/* Mobile Business Info */}
+      <div className="lg:hidden mb-4">
+        <h1 className="text-2xl font-bold mb-1 text-foreground">
+          {vendor.name}
+        </h1>
+        <p className="text-muted-foreground text-sm">{vendor.description}</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row lg:gap-8">
-        {/* Left Column - Gallery */}
-        <div className="w-full lg:w-1/3 lg:flex-shrink-0 mb-8 lg:mb-0">
+      <div className="flex flex-col lg:flex-row lg:gap-4 lg:items-start">
+        {/* Gallery Column */}
+        <div className="w-full lg:w-1/3 lg:flex-shrink-0 mb-4 lg:mb-0 order-2 lg:order-1">
           {vendor.image && (
-            <div className="lg:sticky lg:top-24">
-              <VendorGallery
-                mainImage={{
-                  url: vendor.image.url || '',
-                  alt: vendor.name
-                }}
-              />
+            <div className="space-y-2">
+              <Suspense
+                fallback={
+                  <div className="space-y-1">
+                    <Skeleton className="w-full aspect-[4/3]" />
+                    <div className="grid grid-cols-3 gap-1">
+                      <Skeleton className="aspect-square" />
+                      <Skeleton className="aspect-square" />
+                      <Skeleton className="aspect-square" />
+                    </div>
+                  </div>
+                }
+              >
+                <VendorGallery
+                  images={[
+                    { url: vendor.image.url, alt: vendor.image.alt },
+                    ...additionalImages,
+                  ]}
+                />
+              </Suspense>
+
+              {/* Contact Methods Grid */}
+              {contactMethods.length > 0 && (
+                <div className="grid grid-cols-2 gap-1">
+                  {contactMethods.map((method) => (
+                    <a
+                      key={method.label}
+                      href={method.href}
+                      target={
+                        method.href.startsWith('http') ? '_blank' : undefined
+                      }
+                      rel={
+                        method.href.startsWith('http')
+                          ? 'noopener noreferrer'
+                          : undefined
+                      }
+                      className="flex items-center gap-2 p-1.5 rounded hover:bg-accent text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {method.icon}
+                      <span className="truncate">{method.value}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Right Column - Info */}
-        <div className="flex-grow">
-          {/* Desktop Business Info - Hidden on mobile */}
-          <div className="hidden lg:block">
-            <h1 className="text-2xl font-bold mb-4 text-foreground">{vendor.name}</h1>
-            <p className="text-muted-foreground mb-6">{vendor.description}</p>
-          </div>
-
-          {/* Contact Information */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+        {/* Business Info Card */}
+        <div className="flex-grow order-1 lg:order-2">
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-0">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground hidden lg:block leading-none mb-1">
+                  {vendor.name}
+                </h1>
+                <p className="text-muted-foreground hidden lg:block text-sm">
+                  {vendor.description}
+                </p>
+                <CardTitle className="text-base mt-1">
+                  Business Information
+                </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              {vendor.contact?.phone && <p>Phone: {vendor.contact.phone}</p>}
-              {vendor.contact?.email && <p>Email: {vendor.contact.email}</p>}
-            </CardContent>  
-          </Card>
+            <CardContent className="pt-2">
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {/* Locations Section */}
+                {vendor.addresses && vendor.addresses.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium flex items-center gap-1 mb-1">
+                      <MapPin className="h-3 w-3" />
+                      Locations
+                    </h3>
+                    <div className="space-y-0.5">
+                      {vendor.addresses.map((address, index) => (
+                        <div key={index} className="text-xs pl-3 pb-1">
+                          <div className="flex items-center gap-1">
+                            <p>{address.street}</p>
+                            {address.primary && (
+                              <span className="text-[10px] bg-primary/10 text-primary px-1 rounded-full leading-none py-0.5">
+                                Primary
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground leading-snug">
+                            {address.city}
+                            {address.borough && `, ${address.borough}`}
+                            {address.state && `, ${address.state}`}
+                            {address.zip}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-          {/* Hours */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Business Hours</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {vendor.hours && Object.entries(vendor.hours).map(([day, hours]) => (
-                <div key={day} className="flex justify-between py-1">
-                  <span className="capitalize">{day}</span>
-                  <span>{hours?.start} - {hours?.end}</span>
-                </div>
-              ))}
+                {/* Hours Section */}
+                {vendor.hours && (
+                  <div>
+                    <h3 className="text-sm font-medium flex items-center gap-1 mb-1">
+                      <Clock className="h-3 w-3" />
+                      Hours
+                    </h3>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs pl-3">
+                      {Object.entries(vendor.hours).map(([day, hours]) => (
+                        <div key={day} className="contents">
+                          <span className="capitalize text-muted-foreground">
+                            {day}
+                          </span>
+                          <span>
+                            {hours?.start} - {hours?.end}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Ratings Section */}
+              <div className="mt-3 pt-3 border-t">
+                <VendorRatings placeholder />
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
       {/* Menu Section */}
-      <Tabs defaultValue="menu" className="mt-12">
-        <TabsList>
-          <TabsTrigger value="menu">Menu</TabsTrigger>
-          <TabsTrigger value="location">Location</TabsTrigger>
-        </TabsList>
+      <div className="mt-4">
+        <Tabs defaultValue="menu">
+          <TabsList className="justify-start self-center">
+            <TabsTrigger value="menu">Menu</TabsTrigger>
+            <TabsTrigger value="location">Location</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="menu" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vendor.menuItems?.map((item: any) => (
-              <Card key={item.id}>
-                {item.image && (
-                  <div className="relative h-48 w-full">
-                    <Image
-                      src={item.image.url}
-                      alt={item.name}
-                      fill
-                      className="object-cover rounded-t-lg"
-                    />
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle>{item.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-2">{item.description}</p>
-                  <p className="font-bold">${item.price}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="location">
-          <Card>
-            <CardContent className="pt-6">
-              {vendor.addresses?.map((address: any, index: number) => (
-                <div key={index} className="mb-4">
-                  <p>{address.street}</p>
-                  <p>{address.city}, {address.state} {address.zip}</p>
-                  {address.borough && <p>Borough: {address.borough}</p>}
-                </div>
+          <TabsContent value="menu" className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {vendor.menuItems?.map((item: any) => (
+                <Card key={item.id} className="overflow-hidden">
+                  {item.image && (
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={item.image.url}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="p-3">
+                    <CardTitle className="text-base">{item.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <p className="text-muted-foreground text-sm mb-1">
+                      {item.description}
+                    </p>
+                    <p className="font-medium">${item.price}</p>
+                  </CardContent>
+                </Card>
               ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="location">
+            <Card>
+              <CardContent className="pt-6">
+                {vendor.addresses?.map((address: any, index: number) => (
+                  <div key={index} className="mb-4">
+                    <p>{address.street}</p>
+                    <p>
+                      {address.city}, {address.state} {address.zip}
+                    </p>
+                    {address.borough && <p>Borough: {address.borough}</p>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
-  )
+  );
 }

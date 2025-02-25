@@ -1,141 +1,146 @@
-"use client"
+'use client';
 
-import Image from 'next/image'
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import Image from 'next/image';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card"
-import { useMediaQuery } from "@/hooks/use-media-query"
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 interface GalleryImage {
-  url: string
-  alt: string
+  url: string;
+  alt: string;
 }
-
-// Temporary test images - replace with actual vendor images later
-const testImages: GalleryImage[] = [
-  { url: "https://images.unsplash.com/photo-1565299543923-37dd37887442", alt: "Food 1" },
-  { url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", alt: "Food 2" },
-  { url: "https://images.unsplash.com/photo-1565299507177-b0ac66763828", alt: "Food 3" },
-]
 
 interface VendorGalleryProps {
-  mainImage: GalleryImage
-  additionalImages?: GalleryImage[]
+  images: GalleryImage[];
 }
 
-export function VendorGallery({ mainImage, additionalImages = testImages }: VendorGalleryProps) {
-  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null)
-  const [clickedImage, setClickedImage] = useState<GalleryImage | null>(null)
-  const isMobile = useMediaQuery("(max-width: 768px)")
-  const allImages = [mainImage, ...additionalImages]
-
-  const handleImageInteraction = (image: GalleryImage) => {
-    if (isMobile) {
-      setClickedImage(image)
-    }
-  }
-
+function GalleryModal({
+  images,
+  isOpen,
+  onClose,
+  initialSlide = 0,
+}: {
+  images: GalleryImage[];
+  isOpen: boolean;
+  onClose: () => void;
+  initialSlide: number;
+}) {
   return (
-    <div className="space-y-4">
-      {/* Main Image */}
-      <div className="relative h-[300px] w-full rounded-lg overflow-hidden">
-        <Image
-          src={mainImage.url}
-          alt={mainImage.alt}
-          fill
-          className="object-cover"
-        />
-      </div>
-
-      {/* Bento Grid */}
-      <div className="grid grid-cols-4 gap-2">
-        {allImages.map((image, index) => (
-          isMobile ? (
-            <motion.div
-              key={image.url}
-              className={cn(
-                "relative cursor-pointer rounded-lg overflow-hidden",
-                "h-[100px] transition-all duration-300"
-              )}
-              onClick={() => handleImageInteraction(image)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Image
-                src={image.url}
-                alt={image.alt}
-                fill
-                className="object-cover"
-              />
-            </motion.div>
-          ) : (
-            <HoverCard key={image.url} openDelay={200} closeDelay={100}>
-              <HoverCardTrigger asChild>
-                <motion.div
-                  className={cn(
-                    "relative cursor-pointer rounded-lg overflow-hidden",
-                    "h-[100px] transition-all duration-300"
-                  )}
-                  whileHover={{ scale: 1.05 }}
-                >
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-[95vw] w-[1400px]">
+        <DialogTitle className="sr-only">Image Gallery</DialogTitle>
+        <Carousel
+          className="w-full"
+          opts={{ loop: true, startIndex: initialSlide }}
+        >
+          <CarouselContent>
+            {images.map((image, index) => (
+              <CarouselItem key={image.url}>
+                <div className="relative aspect-[16/10] w-full">
                   <Image
                     src={image.url}
                     alt={image.alt}
                     fill
-                    className="object-cover"
-                  />
-                </motion.div>
-              </HoverCardTrigger>
-              <HoverCardContent 
-                side="right" 
-                align="start" 
-                className="w-[300px] h-[300px] p-0"
-              >
-                <div className="relative w-full h-full">
-                  <Image
-                    src={image.url}
-                    alt={image.alt}
-                    fill
-                    className="object-cover rounded-lg"
+                    className="object-contain rounded-lg"
+                    priority={index === 0}
+                    sizes="95vw"
                   />
                 </div>
-              </HoverCardContent>
-            </HoverCard>
-          )
-        ))}
-      </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-4" />
+          <CarouselNext className="right-4" />
+        </Carousel>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-      {/* Mobile Lightbox */}
-      <AnimatePresence>
-        {isMobile && clickedImage && (
+export function VendorGallery({ images }: VendorGalleryProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  if (!images?.length) return null;
+
+  const mainImage = images[0];
+  const previewImages = images.slice(1, 4);
+  const remainingCount = Math.max(0, images.length - 4);
+
+  return (
+    <>
+      <div className="grid grid-cols-4 gap-2">
+        {/* Main Image - Full width */}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          onClick={() => {
+            setSelectedIndex(0);
+            setIsOpen(true);
+          }}
+          className="relative aspect-[4/3] col-span-4 rounded-lg overflow-hidden cursor-pointer"
+        >
+          <Image
+            src={mainImage.url}
+            alt={mainImage.alt}
+            fill
+            className="object-cover"
+            sizes="(min-width: 768px) 66vw, 100vw"
+            priority
+          />
+        </motion.div>
+
+        {/* Preview Images - Smaller and in a row */}
+        {previewImages.map((image, idx) => (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setClickedImage(null)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            key={image.url}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              setSelectedIndex(idx + 1); // +1 because these are preview images
+              setIsOpen(true);
+            }}
+            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
           >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative w-full max-w-3xl aspect-video"
-            >
-              <Image
-                src={clickedImage.url}
-                alt={clickedImage.alt}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-              />
-            </motion.div>
+            <Image
+              src={image.url}
+              alt={image.alt}
+              fill
+              className="object-cover"
+              sizes="(min-width: 768px) 16vw, 25vw"
+            />
+          </motion.div>
+        ))}
+
+        {/* Show More Button - Same size as previews */}
+        {remainingCount > 0 && (
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              setSelectedIndex(0); // Reset to first image when showing all
+              setIsOpen(true);
+            }}
+            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-muted"
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+              <ImageIcon className="w-4 h-4" />
+              <span className="text-xs font-medium">+{remainingCount}</span>
+            </div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </div>
-  )
+      </div>
+
+      <GalleryModal
+        images={images}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        initialSlide={selectedIndex}
+      />
+    </>
+  );
 }

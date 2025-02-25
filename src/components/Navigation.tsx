@@ -1,10 +1,16 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import Link from "next/link"
-import { Menu } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import * as React from 'react';
+import Link from 'next/link';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,52 +19,52 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/navigation-menu';
+import { cn } from '@/lib/utils';
 
 const cuisines = [
   {
-    title: "Mexican",
-    href: "/cuisines/mexican",
-    description: "Tacos, burritos, and other Mexican street food favorites",
+    title: 'Mexican',
+    href: '/cuisines/mexican',
+    description: 'Tacos, burritos, and other Mexican street food favorites',
   },
   {
-    title: "Asian",
-    href: "/cuisines/asian",
-    description: "From dumplings to noodles - explore Asian street food",
+    title: 'Asian',
+    href: '/cuisines/asian',
+    description: 'From dumplings to noodles - explore Asian street food',
   },
   {
-    title: "Middle Eastern",
-    href: "/cuisines/middle-eastern",
-    description: "Falafel, shawarma, and other Middle Eastern delights",
+    title: 'Middle Eastern',
+    href: '/cuisines/middle-eastern',
+    description: 'Falafel, shawarma, and other Middle Eastern delights',
   },
   {
-    title: "American",
-    href: "/cuisines/american",
-    description: "Classic American street food and food trucks",
+    title: 'American',
+    href: '/cuisines/american',
+    description: 'Classic American street food and food trucks',
   },
-]
+];
 
 const locations = [
   {
-    title: "Manhattan",
-    href: "/locations/manhattan",
-    description: "Street food vendors in Manhattan",
+    title: 'Manhattan',
+    href: '/locations/manhattan',
+    description: 'Street food vendors in Manhattan',
   },
   {
-    title: "Brooklyn",
-    href: "/locations/brooklyn",
+    title: 'Brooklyn',
+    href: '/locations/brooklyn',
     description: "Explore Brooklyn's street food scene",
   },
   {
-    title: "Queens",
-    href: "/locations/queens",
-    description: "Diverse street food offerings in Queens",
+    title: 'Queens',
+    href: '/locations/queens',
+    description: 'Diverse street food offerings in Queens',
   },
-]
+];
 
 export function Navigation() {
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -72,14 +78,31 @@ export function Navigation() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-            <nav className="flex flex-col gap-4">
-              <Link href="/" className="font-bold text-xl">StreetEats</Link>
-              <Link href="/cuisines" className="text-foreground/60">Cuisines</Link>
-              <Link href="/locations" className="text-foreground/60">Locations</Link>
-              <Link href="/blog" className="text-foreground/60">Blog</Link>
-              <Link href="/map" className="text-foreground/60">Food Map</Link>
-              <Link href="/search" className="text-foreground/60">Search</Link>
-              <Link href="/vendors/login" className="text-foreground/60">Vendor Login</Link>
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col gap-4 mt-4">
+              <Link href="/" className="font-bold text-xl">
+                StreetEats
+              </Link>
+              <Link href="/cuisines" className="text-foreground/60">
+                Cuisines
+              </Link>
+              <Link href="/locations" className="text-foreground/60">
+                Locations
+              </Link>
+              <Link href="/blog" className="text-foreground/60">
+                Blog
+              </Link>
+              <Link href="/map" className="text-foreground/60">
+                Food Map
+              </Link>
+              <Link href="/search" className="text-foreground/60">
+                Search
+              </Link>
+              <Link href="/vendors/login" className="text-foreground/60">
+                Vendor Login
+              </Link>
             </nav>
           </SheetContent>
         </Sheet>
@@ -91,7 +114,9 @@ export function Navigation() {
               <NavigationMenuItem>
                 <Link href="/" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <span className="font-bold text-xl text-foreground">StreetEats</span>
+                    <span className="font-bold text-xl text-foreground">
+                      StreetEats
+                    </span>
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -177,7 +202,7 @@ export function Navigation() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const ListItem = React.forwardRef<
@@ -193,18 +218,20 @@ const ListItem = React.forwardRef<
         <Link
           ref={ref}
           className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors focus:text-accent-foreground text-foreground",
-            className
+            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors focus:text-accent-foreground text-foreground',
+            className,
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none text-foreground">{title}</div>
+          <div className="text-sm font-medium leading-none text-foreground">
+            {title}
+          </div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = "ListItem"
+  );
+});
+ListItem.displayName = 'ListItem';
