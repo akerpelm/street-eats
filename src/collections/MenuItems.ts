@@ -1,4 +1,4 @@
-import { CollectionConfig } from "payload";
+import { CollectionConfig } from 'payload';
 
 const MenuItem: CollectionConfig = {
   slug: 'menuItems',
@@ -24,25 +24,12 @@ const MenuItem: CollectionConfig = {
     {
       name: 'spiceLevel',
       type: 'select',
-      options: [
-        'None',
-        'Mild',
-        'Medium',
-        'Hot',
-        'Extra Hot',
-        'You Pick'
-      ],
+      options: ['None', 'Mild', 'Medium', 'Hot', 'Extra Hot', 'You Pick'],
     },
     {
       name: 'category',
       type: 'select',
-      options: [
-        'Starters',
-        'Main',
-        'Salads',
-        'Desserts',
-        'Drinks',
-      ],
+      options: ['Starters', 'Main', 'Salads', 'Desserts', 'Drinks'],
       required: true,
     },
     {
@@ -68,20 +55,52 @@ const MenuItem: CollectionConfig = {
     {
       name: 'allergens',
       type: 'select',
-      options: [
-        'Nuts',
-        'Dairy',
-        'Soy',
-        'Gluten',
-        'Eggs',
-        'Shellfish',
-        'Fish',
-      ],
+      options: ['Nuts', 'Dairy', 'Soy', 'Gluten', 'Eggs', 'Shellfish', 'Fish'],
       hasMany: true,
     },
     {
       name: 'calories',
       type: 'number',
+    },
+    {
+      name: 'ratings',
+      type: 'group',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'averageRating',
+          type: 'group',
+          fields: [
+            { name: 'taste', type: 'number' },
+            { name: 'presentation', type: 'number' },
+            { name: 'portionSize', type: 'number' },
+          ],
+        },
+        {
+          name: 'recommendationPercentage',
+          type: 'number',
+        },
+        {
+          name: 'totalReviews',
+          type: 'number',
+        },
+        {
+          name: 'popularTags',
+          type: 'array',
+          fields: [
+            {
+              name: 'tag',
+              type: 'text',
+            },
+            {
+              name: 'count',
+              type: 'number',
+            },
+          ],
+        },
+      ],
     },
   ],
 };

@@ -17,6 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VendorRatings } from '@/components/vendors/VendorRatings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { ReviewCard } from '@/components/vendors/ReviewCard';
+import { aggregateVendorRatings } from '@/lib/ratingUtils';
+
 interface Props {
   params: Promise<{
     slug: string;
@@ -27,23 +30,33 @@ export default async function VendorPage({ params }: Props) {
   const { slug } = await params;
   const payload = await getPayload({ config });
 
-  const { docs } = await payload
-    .find({
-      collection: 'vendors',
-      where: {
-        slug: {
-          equals: slug,
-        },
+  // Fetch vendor with ratings
+  const {
+    docs: [vendor],
+  } = await payload.find({
+    collection: 'vendors',
+    where: {
+      slug: {
+        equals: slug,
       },
-      depth: 2,
-      limit: 1,
-    })
-    .catch(() => ({ docs: [] }));
+    },
+    depth: 2,
+  });
 
-  const vendor = docs[0];
-  if (!vendor) {
-    return notFound();
-  }
+  // Fetch all ratings for this vendor
+  const { docs: ratings } = await payload.find({
+    collection: 'ratings',
+    where: {
+      vendor: {
+        equals: vendor.id,
+      },
+    },
+    depth: 1,
+  });
+
+  if (!vendor) return notFound();
+
+  const aggregatedRatings = aggregateVendorRatings(ratings);
 
   const additionalImages = [
     {
@@ -126,7 +139,7 @@ export default async function VendorPage({ params }: Props) {
   ].filter(Boolean);
 
   return (
-    <div className="max-w-7xl mx-auto py-4 px-4">
+    <div className="max-w-7xl mx-auto py-4 px-4 bg-background">
       {/* Mobile Business Info */}
       <div className="lg:hidden mb-4">
         <h1 className="text-2xl font-bold mb-1 text-foreground">
@@ -189,7 +202,7 @@ export default async function VendorPage({ params }: Props) {
 
         {/* Business Info Card */}
         <div className="flex-grow order-1 lg:order-2">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden p-0 pb-2">
             <CardHeader className="pb-0">
               <div>
                 <h1 className="text-2xl font-bold text-foreground hidden lg:block leading-none mb-1">
@@ -219,7 +232,7 @@ export default async function VendorPage({ params }: Props) {
                           <div className="flex items-center gap-1">
                             <p>{address.street}</p>
                             {address.primary && (
-                              <span className="text-[10px] bg-primary/10 text-primary px-1 rounded-full leading-none py-0.5">
+                              <span className="text-[10px] bg-primary px-1 rounded-full leading-none py-0.5">
                                 Primary
                               </span>
                             )}
@@ -273,13 +286,15 @@ export default async function VendorPage({ params }: Props) {
         <Tabs defaultValue="menu">
           <TabsList className="justify-start self-center">
             <TabsTrigger value="menu">Menu</TabsTrigger>
-            <TabsTrigger value="location">Location</TabsTrigger>
+            <TabsTrigger value="reviews">
+              Reviews ({aggregatedRatings.totalReviews})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="menu" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {vendor.menuItems?.map((item: any) => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card key={item.id} className="overflow-hidden p-0">
                   {item.image && (
                     <div className="relative h-40 w-full">
                       <Image
@@ -290,7 +305,7 @@ export default async function VendorPage({ params }: Props) {
                       />
                     </div>
                   )}
-                  <CardHeader className="p-3">
+                  <CardHeader className="px-3">
                     <CardTitle className="text-base">{item.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
@@ -304,20 +319,22 @@ export default async function VendorPage({ params }: Props) {
             </div>
           </TabsContent>
 
-          <TabsContent value="location">
-            <Card>
-              <CardContent className="pt-6">
-                {vendor.addresses?.map((address: any, index: number) => (
-                  <div key={index} className="mb-4">
-                    <p>{address.street}</p>
-                    <p>
-                      {address.city}, {address.state} {address.zip}
-                    </p>
-                    {address.borough && <p>Borough: {address.borough}</p>}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <TabsContent value="reviews" className="mt-4">
+            <div>
+              {ratings.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {ratings.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-6 text-center text-muted-foreground">
+                    No reviews yet. Be the first to review this vendor!
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>

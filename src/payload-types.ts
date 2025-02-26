@@ -70,6 +70,7 @@ export interface Config {
     media: Media;
     vendors: Vendor;
     menuItems: MenuItem;
+    ratings: Rating;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -80,6 +81,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     vendors: VendorsSelect<false> | VendorsSelect<true>;
     menuItems: MenuItemsSelect<false> | MenuItemsSelect<true>;
+    ratings: RatingsSelect<false> | RatingsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -271,6 +273,23 @@ export interface Vendor {
     | 'Caribbean'
     | 'Greek'
     | 'Other';
+  ratings?: {
+    averageRating?: {
+      foodQuality?: number | null;
+      service?: number | null;
+      value?: number | null;
+      atmosphere?: number | null;
+    };
+    recommendationPercentage?: number | null;
+    totalReviews?: number | null;
+    popularTags?:
+      | {
+          tag?: string | null;
+          count?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -291,6 +310,73 @@ export interface MenuItem {
   vegetarian?: boolean | null;
   allergens?: ('Nuts' | 'Dairy' | 'Soy' | 'Gluten' | 'Eggs' | 'Shellfish' | 'Fish')[] | null;
   calories?: number | null;
+  ratings?: {
+    averageRating?: {
+      taste?: number | null;
+      presentation?: number | null;
+      portionSize?: number | null;
+    };
+    recommendationPercentage?: number | null;
+    totalReviews?: number | null;
+    popularTags?:
+      | {
+          tag?: string | null;
+          count?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ratings".
+ */
+export interface Rating {
+  id: number;
+  user: number | User;
+  ratingType: 'vendor' | 'menuItem';
+  vendor?: (number | null) | Vendor;
+  menuItem?: (number | null) | MenuItem;
+  vendorRating?: {
+    foodQuality: number;
+    service: number;
+    value: number;
+    atmosphere?: number | null;
+    recommend: boolean;
+  };
+  menuItemRating?: {
+    taste: number;
+    presentation: number;
+    portionSize: number;
+    recommend: boolean;
+  };
+  comment?: string | null;
+  tags?:
+    | (
+        | 'Spicy'
+        | 'Mild'
+        | 'Large Portion'
+        | 'Small Portion'
+        | 'Great Value'
+        | 'Expensive'
+        | 'Quick Service'
+        | 'Slow Service'
+        | 'Fresh'
+        | 'Authentic'
+        | 'Innovative'
+        | 'Worth the Wait'
+        | 'Hidden Gem'
+      )[]
+    | null;
+  images?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -316,6 +402,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'menuItems';
         value: number | MenuItem;
+      } | null)
+    | ({
+        relationTo: 'ratings';
+        value: number | Rating;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -474,6 +564,27 @@ export interface VendorsSelect<T extends boolean = true> {
             };
       };
   cuisine?: T;
+  ratings?:
+    | T
+    | {
+        averageRating?:
+          | T
+          | {
+              foodQuality?: T;
+              service?: T;
+              value?: T;
+              atmosphere?: T;
+            };
+        recommendationPercentage?: T;
+        totalReviews?: T;
+        popularTags?:
+          | T
+          | {
+              tag?: T;
+              count?: T;
+              id?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -493,6 +604,64 @@ export interface MenuItemsSelect<T extends boolean = true> {
   vegetarian?: T;
   allergens?: T;
   calories?: T;
+  ratings?:
+    | T
+    | {
+        averageRating?:
+          | T
+          | {
+              taste?: T;
+              presentation?: T;
+              portionSize?: T;
+            };
+        recommendationPercentage?: T;
+        totalReviews?: T;
+        popularTags?:
+          | T
+          | {
+              tag?: T;
+              count?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ratings_select".
+ */
+export interface RatingsSelect<T extends boolean = true> {
+  user?: T;
+  ratingType?: T;
+  vendor?: T;
+  menuItem?: T;
+  vendorRating?:
+    | T
+    | {
+        foodQuality?: T;
+        service?: T;
+        value?: T;
+        atmosphere?: T;
+        recommend?: T;
+      };
+  menuItemRating?:
+    | T
+    | {
+        taste?: T;
+        presentation?: T;
+        portionSize?: T;
+        recommend?: T;
+      };
+  comment?: T;
+  tags?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

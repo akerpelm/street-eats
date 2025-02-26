@@ -1,14 +1,15 @@
-import { CollectionConfig } from "payload";
-import { normalizeTimeString } from "../lib/timeUtils";
+import { CollectionConfig } from 'payload';
+import { normalizeTimeString } from '../lib/timeUtils';
 
 const timeFieldProps = {
   type: 'text' as const,
   validate: (val: string | null | undefined) => {
     if (!val) return true; // Allow empty values
-    
+
     // Match formats: "9:00 AM", "9:00AM", "9 AM", "9AM", "09:00", "13:00"
-    const timeRegex = /^(0?[1-9]|1[0-2])(?::([0-5]\d))?\s*([AaPp][Mm])|([01]\d|2[0-3]):[0-5]\d$/;
-    
+    const timeRegex =
+      /^(0?[1-9]|1[0-2])(?::([0-5]\d))?\s*([AaPp][Mm])|([01]\d|2[0-3]):[0-5]\d$/;
+
     if (!timeRegex.test(val)) {
       return 'Please enter time in format "9:00 AM", "9 AM", or "13:00"';
     }
@@ -16,8 +17,8 @@ const timeFieldProps = {
   },
   admin: {
     placeholder: 'e.g. 9:00 AM or 13:00',
-    description: 'Enter time in 12-hour (9:00 AM) or 24-hour (13:00) format'
-  }
+    description: 'Enter time in 12-hour (9:00 AM) or 24-hour (13:00) format',
+  },
 };
 
 const dayFields = {
@@ -44,25 +45,31 @@ const Vendors: CollectionConfig = {
       async ({ data }) => {
         if (data && data.hours) {
           const normalizedHours = {} as any;
-          
+
           // Normalize each day's hours
           Object.entries(data.hours).forEach(([day, hours]: [string, any]) => {
             if (hours?.start || hours?.end) {
               normalizedHours[day] = {
                 start: normalizeTimeString(hours.start),
-                end: normalizeTimeString(hours.end)
+                end: normalizeTimeString(hours.end),
               };
             }
           });
-          
+
           return {
             ...data,
-            hours: normalizedHours
+            hours: normalizedHours,
           };
         }
         return data;
-      }
-    ]
+      },
+    ],
+    afterChange: [
+      async ({ doc, req }) => {
+        // Update rating aggregations when ratings change
+        // Implementation details to follow
+      },
+    ],
   },
   fields: [
     {
@@ -181,31 +188,31 @@ const Vendors: CollectionConfig = {
       fields: [
         {
           name: 'monday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'tuesday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'wednesday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'thursday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'friday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'saturday',
-          ...dayFields
+          ...dayFields,
         },
         {
           name: 'sunday',
-          ...dayFields
+          ...dayFields,
         },
       ],
     },
@@ -223,7 +230,48 @@ const Vendors: CollectionConfig = {
         'Indian',
         'Caribbean',
         'Greek',
-        'Other'
+        'Other',
+      ],
+    },
+    {
+      name: 'ratings',
+      type: 'group',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'averageRating',
+          type: 'group',
+          fields: [
+            { name: 'foodQuality', type: 'number' },
+            { name: 'service', type: 'number' },
+            { name: 'value', type: 'number' },
+            { name: 'atmosphere', type: 'number' },
+          ],
+        },
+        {
+          name: 'recommendationPercentage',
+          type: 'number',
+        },
+        {
+          name: 'totalReviews',
+          type: 'number',
+        },
+        {
+          name: 'popularTags',
+          type: 'array',
+          fields: [
+            {
+              name: 'tag',
+              type: 'text',
+            },
+            {
+              name: 'count',
+              type: 'number',
+            },
+          ],
+        },
       ],
     },
   ],

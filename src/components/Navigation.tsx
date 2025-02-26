@@ -85,24 +85,12 @@ export function Navigation() {
               <Link href="/" className="font-bold text-xl">
                 StreetEats
               </Link>
-              <Link href="/cuisines" className="text-foreground/60">
-                Cuisines
-              </Link>
-              <Link href="/locations" className="text-foreground/60">
-                Locations
-              </Link>
-              <Link href="/blog" className="text-foreground/60">
-                Blog
-              </Link>
-              <Link href="/map" className="text-foreground/60">
-                Food Map
-              </Link>
-              <Link href="/search" className="text-foreground/60">
-                Search
-              </Link>
-              <Link href="/vendors/login" className="text-foreground/60">
-                Vendor Login
-              </Link>
+              <Link href="/cuisines">Cuisines</Link>
+              <Link href="/locations">Locations</Link>
+              <Link href="/blog">Blog</Link>
+              <Link href="/map">Food Map</Link>
+              <Link href="/search">Search</Link>
+              <Link href="/vendors/login">Vendor Login</Link>
             </nav>
           </SheetContent>
         </Sheet>
@@ -215,14 +203,7 @@ const ListItem = React.forwardRef<
   return (
     <li className="list-none">
       <NavigationMenuLink asChild>
-        <Link
-          ref={ref}
-          className={cn(
-            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors focus:text-accent-foreground text-foreground',
-            className,
-          )}
-          {...props}
-        >
+        <Link ref={ref} className={cn('', className)} {...props}>
           <div className="text-sm font-medium leading-none text-foreground">
             {title}
           </div>
